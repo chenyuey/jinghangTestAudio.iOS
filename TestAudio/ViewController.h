@@ -8,13 +8,21 @@
 
 #import <UIKit/UIKit.h>
 #import <AVFoundation/AVFoundation.h>
+#import <AVKit/AVKit.h>
+#import <MediaPlayer/MediaPlayer.h>
+#import <sys/utsname.h>
 
 
 @interface ViewController : UIViewController{
     NSDictionary *mediaInfo;
     BOOL isStarting;
+//    UIProgressView *audioProcessView;
 }
 @property(nonatomic,strong)AVPlayer * globalPlayer;
+@property(nonatomic,strong)id timeObserver;
+//视频
+@property(nonatomic, strong)MPMoviePlayerController *mpMoviePlayer;
+@property(nonatomic, strong)UIProgressView *audioProcessView;
 
 
 @end

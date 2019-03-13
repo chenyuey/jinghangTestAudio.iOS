@@ -122,6 +122,7 @@
 		5212273C223612CE00B819FC /* TestAudio */ = {
 			isa = PBXGroup;
 			children = (
+				5299AFED2238A7E300699683 /* AVPlayerView */,
 				5299AFE5223788E300699683 /* API */,
 				5212273D223612CE00B819FC /* AppDelegate.h */,
 				5212273E223612CE00B819FC /* AppDelegate.m */,
@@ -162,6 +163,13 @@
 				5299AFE6223788E300699683 /* API.m */,
 			);
 			path = API;
+			sourceTree = "<group>";
+		};
+		5299AFED2238A7E300699683 /* AVPlayerView */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = AVPlayerView;
 			sourceTree = "<group>";
 		};
 		73B9E92FD7D234B9828C366C /* Frameworks */ = {
