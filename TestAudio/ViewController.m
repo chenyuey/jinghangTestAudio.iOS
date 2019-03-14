@@ -60,10 +60,11 @@
     
 }
 - (void)fetchTestJob{
-    [PFCloud callFunctionInBackground:@"fetchTestJob" withParameters:@{@"equipment":@{@"equipment_name": [ViewController deviceModelName], @"player_name": @"AVPlayer", @"system_version":[NSString stringWithFormat:@"iOS%@",[[UIDevice currentDevice] systemVersion]]}} block:^(id  _Nullable object, NSError * _Nullable error) {
+    NSDictionary *dictInfo = @{@"equipment":@{@"equipment_name": [ViewController deviceModelName], @"player_name": @"AVPlayer", @"system_version":[NSString stringWithFormat:@"iOS%@",[[UIDevice currentDevice] systemVersion]]}};
+    [PFCloud callFunctionInBackground:@"fetchTestJob" withParameters:dictInfo block:^(id  _Nullable object, NSError * _Nullable error) {
         if (object != nil) {
             self->mediaInfo = object;
-            [self replaceTestCurrentItem:[self->mediaInfo objectForKey:@"mediaUrl"] :[self->mediaInfo objectForKey:@"mediaType"]];
+            [self replaceTestCurrentItem:[self->mediaInfo objectForKey:@"mediaUrl"] :@"video"];
         }
         NSLog(@"mediaUrl:%@",object);
     }];
@@ -97,7 +98,7 @@
         [self.mpMoviePlayer prepareToPlay];
         [self.mpMoviePlayer setShouldAutoplay:NO];
         [self addNotification];
-    }else{
+    }else if(mediaType != nil){
         [self fetchTestJob];
     }
 }
@@ -162,12 +163,13 @@
 - (void)mediaPlayerLoadStatechanged:(NSNotification *)notification{
     switch (self.mpMoviePlayer.loadState) {
         case MPMovieLoadStatePlayable:
+            [[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayback error:nil];
             [self.mpMoviePlayer play];
             NSLog(@"可以播放");
             break;
         case MPMovieLoadStateUnknown:
-            NSLog(@"加载失败");
-            [self getNextTestMediaPlayerWithIsSuccess:NO];
+//            NSLog(@"加载失败");
+//            [self getNextTestMediaPlayerWithIsSuccess:NO];
         default:
             break;
     }
@@ -179,16 +181,29 @@
  *  @param notification 通知对象
  */
 -(void)mediaPlayerPlaybackFinished:(NSNotification *)notification{
+    NSNumber * reason = [[notification userInfo] objectForKey:MPMoviePlayerPlaybackDidFinishReasonUserInfoKey];
     [self removeNotification];
-    [self getNextTestMediaPlayerWithIsSuccess:YES];
+    switch ([reason intValue]) {
+        case MPMovieFinishReasonPlaybackEnded:
+            NSLog(@"Playback Ended");
+            [self getNextTestMediaPlayerWithIsSuccess:YES];
+            break;
+        case MPMovieFinishReasonPlaybackError:
+            NSLog(@"Playback Error");
+            [self getNextTestMediaPlayerWithIsSuccess:YES];
+            break;
+        case MPMovieFinishReasonUserExited:
+            NSLog(@"User Exited");
+            break;
+        default:
+            break;
+    }
 }
 - (void)getNextTestMediaPlayerWithIsSuccess:(BOOL)isSuccess
 {
     if (isStarting == YES) {
         NSDictionary *dictInfo = @{@"success": [NSNumber numberWithBool:isSuccess], @"mediaId": [mediaInfo objectForKey:@"mediaId"], @"mediaUrl": [mediaInfo objectForKey:@"mediaUrl"],@"equipment":@{@"equipment_name": [ViewController deviceModelName], @"player_name": @"AVPlayer", @"system_version":[NSString stringWithFormat:@"iOS%@",[[UIDevice currentDevice] systemVersion]]}};
-//        NSLog(@"=====dictInfo:%@",dictInfo);
         [PFCloud callFunctionInBackground:@"uploadTestReport" withParameters:dictInfo block:^(id  _Nullable object, NSError * _Nullable error) {
-//            NSLog(@"uploadTestReport%@",object);
             [self fetchTestJob];
         }];
     }
@@ -196,7 +211,6 @@
 //创建进度条
 - (UIProgressView *)createProgressWithFrame:(CGRect)frame{
     UIProgressView *processView = [[UIProgressView alloc]initWithProgressViewStyle:UIProgressViewStyleDefault];
-    //    processView.progress = 0.5;
     processView.frame = frame;
     processView.progressTintColor = [UIColor colorWithRed:31/255.0 green:194/255.0 blue:155/255.0 alpha:1.0];
     processView.trackTintColor = [UIColor colorWithRed:71/255.0 green:71/255.0 blue:71/255.0 alpha:1.0];
