@@ -89,6 +89,7 @@
         }else{
             [self.globalPlayer replaceCurrentItemWithPlayerItem:playItem];
         }
+        [self.globalPlayer playImmediatelyAtRate:1.0];
         [self addObserverWithAudio];
     }else if ([mediaType isEqualToString:@"video"]){
         //视频类型
@@ -130,7 +131,7 @@
     if ([keyPath isEqualToString:@"status"]) {
         if ([playerItem status] == AVPlayerStatusReadyToPlay) {
             NSLog(@"AVPlayerStatusReadyToPlay");
-            [self.globalPlayer playImmediatelyAtRate:1.0];
+//            [self.globalPlayer playImmediatelyAtRate:1.0];
         }else if ([playerItem status] == AVPlayerStatusFailed) {
             NSLog(@"AVPlayerStatusFailed");
             [self getNextTestMediaPlayerWithIsSuccess:NO];
