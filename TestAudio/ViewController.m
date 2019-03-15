@@ -31,7 +31,6 @@
     self.audioProcessView = [self createProgressWithFrame:CGRectMake(50, videoView.frame.size.height+  videoView.frame.origin.y + 17,[UIScreen mainScreen].bounds.size.width - 100, 4)];
     self.audioProcessView.progress = 0;
     
-    
 }
 //添加视频播放页面
 - (UIView *)createPlayerInViewWithFrame:(CGRect)frame{
@@ -40,7 +39,7 @@
     playerView.backgroundColor = [UIColor whiteColor];
     // 实例化媒体播放控件
     self.mpMoviePlayer = [[MPMoviePlayerController alloc] init];
-//    self.mpMoviePlayer.controlStyle = MPMovieControlStyleNone ;
+    self.mpMoviePlayer.controlStyle = MPMovieControlStyleNone ;
     self.mpMoviePlayer.view.frame=playerView.bounds;
     playerView.clipsToBounds = YES;
     [playerView addSubview:self.mpMoviePlayer.view];
@@ -64,7 +63,7 @@
     [PFCloud callFunctionInBackground:@"fetchTestJob" withParameters:dictInfo block:^(id  _Nullable object, NSError * _Nullable error) {
         if (object != nil) {
             self->mediaInfo = object;
-            [self replaceTestCurrentItem:[self->mediaInfo objectForKey:@"mediaUrl"] :@"video"];
+            [self getFileContentWithUrl:[self->mediaInfo objectForKey:@"mediaUrl"] andFileType :@"video"];
         }
         NSLog(@"mediaUrl:%@",object);
     }];
@@ -98,15 +97,12 @@
         [self.mpMoviePlayer setContentURL:mediaUrl];
         [self.mpMoviePlayer prepareToPlay];
         [self.mpMoviePlayer setShouldAutoplay:NO];
+        [[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayback error:nil];
+        [self.mpMoviePlayer play];
         [self addNotification];
     }else if(mediaType != nil){
         [self fetchTestJob];
     }
-}
-//结束测试
-- (void)endTestAudio:(id)sender{
-    isStarting = NO;
-//    [self.globalPlayer pause];
 }
 #define kWeakSelf(type)  __weak typeof(type) weak##type = type;
 - (void)addObserverWithAudio{
@@ -134,7 +130,7 @@
 //            [self.globalPlayer playImmediatelyAtRate:1.0];
         }else if ([playerItem status] == AVPlayerStatusFailed) {
             NSLog(@"AVPlayerStatusFailed");
-            [self getNextTestMediaPlayerWithIsSuccess:NO];
+            [self getNextTestMediaPlayerWithIsSuccess:NO :@"音频加载失败"];
         }
         
     }
@@ -153,27 +149,10 @@
 -(void)addNotification{
     NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
     [notificationCenter addObserver:self selector:@selector(mediaPlayerPlaybackFinished:) name:MPMoviePlayerPlaybackDidFinishNotification object:self.mpMoviePlayer];
-    [notificationCenter addObserver:self selector:@selector(mediaPlayerLoadStatechanged:) name:MPMoviePlayerLoadStateDidChangeNotification object:self.mpMoviePlayer];
 }
 - (void)removeNotification{
     NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
     [notificationCenter removeObserver:self name:MPMoviePlayerPlaybackDidFinishNotification object:self.mpMoviePlayer];
-    [notificationCenter removeObserver:self name:MPMoviePlayerLoadStateDidChangeNotification object:self.mpMoviePlayer];
-    
-}
-- (void)mediaPlayerLoadStatechanged:(NSNotification *)notification{
-    switch (self.mpMoviePlayer.loadState) {
-        case MPMovieLoadStatePlayable:
-            [[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayback error:nil];
-            [self.mpMoviePlayer play];
-            NSLog(@"可以播放");
-            break;
-        case MPMovieLoadStateUnknown:
-//            NSLog(@"加载失败");
-//            [self getNextTestMediaPlayerWithIsSuccess:NO];
-        default:
-            break;
-    }
 }
 
 /**
@@ -182,28 +161,13 @@
  *  @param notification 通知对象
  */
 -(void)mediaPlayerPlaybackFinished:(NSNotification *)notification{
-    NSNumber * reason = [[notification userInfo] objectForKey:MPMoviePlayerPlaybackDidFinishReasonUserInfoKey];
     [self removeNotification];
-    switch ([reason intValue]) {
-        case MPMovieFinishReasonPlaybackEnded:
-            NSLog(@"Playback Ended");
-            [self getNextTestMediaPlayerWithIsSuccess:YES];
-            break;
-        case MPMovieFinishReasonPlaybackError:
-            NSLog(@"Playback Error");
-            [self getNextTestMediaPlayerWithIsSuccess:YES];
-            break;
-        case MPMovieFinishReasonUserExited:
-            NSLog(@"User Exited");
-            break;
-        default:
-            break;
-    }
+    [self getNextTestMediaPlayerWithIsSuccess:YES :@""];
 }
-- (void)getNextTestMediaPlayerWithIsSuccess:(BOOL)isSuccess
+- (void)getNextTestMediaPlayerWithIsSuccess:(BOOL)isSuccess :(NSString *)errorMessage
 {
     if (isStarting == YES) {
-        NSDictionary *dictInfo = @{@"success": [NSNumber numberWithBool:isSuccess], @"mediaId": [mediaInfo objectForKey:@"mediaId"], @"mediaUrl": [mediaInfo objectForKey:@"mediaUrl"],@"equipment":@{@"equipment_name": [ViewController deviceModelName], @"player_name": @"AVPlayer", @"system_version":[NSString stringWithFormat:@"iOS%@",[[UIDevice currentDevice] systemVersion]]}};
+        NSDictionary *dictInfo = @{@"success": [NSNumber numberWithBool:isSuccess],@"errorMsg":errorMessage, @"mediaId": [mediaInfo objectForKey:@"mediaId"], @"mediaUrl": [mediaInfo objectForKey:@"mediaUrl"],@"equipment":@{@"equipment_name": [ViewController deviceModelName], @"player_name": @"AVPlayer", @"system_version":[NSString stringWithFormat:@"iOS%@",[[UIDevice currentDevice] systemVersion]]}};
         [PFCloud callFunctionInBackground:@"uploadTestReport" withParameters:dictInfo block:^(id  _Nullable object, NSError * _Nullable error) {
             [self fetchTestJob];
         }];
@@ -221,7 +185,24 @@
 //
 - (void)stopAudioAndTestNext{
     [self.globalPlayer pause];
-    [self getNextTestMediaPlayerWithIsSuccess:YES];
+    [self getNextTestMediaPlayerWithIsSuccess:YES : @""];
 }
 
+//检测远程文件是否存在
+- (void)getFileContentWithUrl:(NSString *)strURL andFileType:(NSString *)type{
+    NSURL *url = [NSURL URLWithString:strURL];
+    //A Boolean value that turns an indicator of network activity on or off.
+    [UIApplication sharedApplication].networkActivityIndicatorVisible = YES;
+    NSData *xmlData = [NSData dataWithContentsOfURL:url];
+    [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
+    NSString *xmlString = [[NSString alloc] initWithData:xmlData encoding:NSUTF8StringEncoding];
+    if (xmlData == nil) {
+        NSLog(@"File read failed!:%@", @"文件不存在");
+        [self getNextTestMediaPlayerWithIsSuccess:NO :@"文件不存在"];
+    }
+    else {
+        NSLog(@"File read succeed!:%@",xmlString);
+        [self replaceTestCurrentItem:strURL :type];
+    }
+}
 @end
