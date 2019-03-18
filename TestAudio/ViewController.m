@@ -64,7 +64,7 @@
     playerView.backgroundColor = [UIColor whiteColor];
     // 实例化媒体播放控件
     self.mpMoviePlayer = [[MPMoviePlayerController alloc] init];
-    self.mpMoviePlayer.controlStyle = MPMovieControlStyleNone ;
+//    self.mpMoviePlayer.controlStyle = MPMovieControlStyleNone ;
     self.mpMoviePlayer.view.frame=playerView.bounds;
     playerView.clipsToBounds = YES;
     [playerView addSubview:self.mpMoviePlayer.view];
@@ -135,6 +135,7 @@
             [self.mpMoviePlayer setShouldAutoplay:NO];
             [[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayback error:nil];
             [self.mpMoviePlayer play];
+            
             [self addNotification];
         }else{
             [self getNextTestMediaPlayerWithIsSuccess:NO :@"视频格式有误，moviePlayer只支持MOV、MP4、M4V、3GP格式"];
@@ -164,8 +165,8 @@
 }
 #pragma mark - 监听网络音频状态
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context{
-    AVPlayerItem *playerItem = (AVPlayerItem *)object;
     if ([keyPath isEqualToString:@"status"]) {
+        AVPlayerItem *playerItem = (AVPlayerItem *)object;
         if ([playerItem status] == AVPlayerStatusReadyToPlay) {
             NSLog(@"AVPlayerStatusReadyToPlay");
 //            [self.globalPlayer playImmediatelyAtRate:1.0];
@@ -211,6 +212,8 @@
 -(void)addNotification{
     NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
     [notificationCenter addObserver:self selector:@selector(mediaPlayerPlaybackFinished:) name:MPMoviePlayerPlaybackDidFinishNotification object:self.mpMoviePlayer];
+//    [self.mpMoviePlayer addObserver:self forKeyPath:@"VideoStatus" options:NSKeyValueObservingOptionNew|NSKeyValueObservingOptionOld context:nil];
+    [notificationCenter addObserver:self selector:@selector(mediaPlayerLoadStatusChange:) name:MPMoviePlayerLoadStateDidChangeNotification object:nil];
 }
 - (void)removeNotification{
     NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
@@ -230,6 +233,18 @@
         [self getNextTestMediaPlayerWithIsSuccess:YES :@""];
     }else if (reason == MPMovieFinishReasonPlaybackError){
         
+    }
+}
+- (void)mediaPlayerLoadStatusChange:(NSNotification *)notification{
+    switch (self.mpMoviePlayer.loadState) {
+        case MPMovieLoadStatePlayable:
+            NSLog(@"MPMovieLoadStatePlayable");
+            break;
+        case MPMovieLoadStateUnknown:
+            NSLog(@"MPMovieLoadStateUnknown");
+            [self getNextTestMediaPlayerWithIsSuccess:NO :@"视频加载失败"];
+        default:
+            break;
     }
 }
 - (void)getNextTestMediaPlayerWithIsSuccess:(BOOL)isSuccess :(NSString *)errorMessage
