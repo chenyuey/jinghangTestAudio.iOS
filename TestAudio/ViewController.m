@@ -40,12 +40,22 @@
     
     
 }
+#pragma mark - 创建UI
 - (UILabel *)createLabelWithFrame:(CGRect)frame :(CGFloat)fontSize :(NSString *)fontName :(UIColor *)fontColor :(NSTextAlignment)alignment{
     UILabel *label = [[UILabel alloc]initWithFrame:frame];
     label.font = [UIFont fontWithName:fontName size:fontSize];
     label.textColor = fontColor;
     label.textAlignment = alignment;
     return label;
+}
+//创建进度条
+- (UIProgressView *)createProgressWithFrame:(CGRect)frame{
+    UIProgressView *processView = [[UIProgressView alloc]initWithProgressViewStyle:UIProgressViewStyleDefault];
+    processView.frame = frame;
+    processView.progressTintColor = [UIColor colorWithRed:31/255.0 green:194/255.0 blue:155/255.0 alpha:1.0];
+    processView.trackTintColor = [UIColor colorWithRed:71/255.0 green:71/255.0 blue:71/255.0 alpha:1.0];
+    [self.view addSubview:processView];
+    return processView;
 }
 //添加视频播放页面
 - (UIView *)createPlayerInViewWithFrame:(CGRect)frame{
@@ -60,6 +70,7 @@
     [playerView addSubview:self.mpMoviePlayer.view];
     return playerView;
 }
+#pragma mark - 事件
 //开始测试
 - (void)startTestAudio:(id)sender{
     UIButton *btn = (UIButton *)sender;
@@ -174,6 +185,7 @@
     NSString *deviceModel = [NSString stringWithCString:systemInfo.machine encoding:NSUTF8StringEncoding];
     return deviceModel;
 }
+#pragma mark - 检查音频和视频的格式
 - (BOOL)getIsValidVideoFormatWithURL:(NSString *)strURL{
     NSArray *allFormat = @[@"mov",@"mp4",@"m4v",@"3gp"];
     NSArray *arrURLs = [strURL componentsSeparatedByString:@"."];
@@ -229,15 +241,7 @@
         }];
     }
 }
-//创建进度条
-- (UIProgressView *)createProgressWithFrame:(CGRect)frame{
-    UIProgressView *processView = [[UIProgressView alloc]initWithProgressViewStyle:UIProgressViewStyleDefault];
-    processView.frame = frame;
-    processView.progressTintColor = [UIColor colorWithRed:31/255.0 green:194/255.0 blue:155/255.0 alpha:1.0];
-    processView.trackTintColor = [UIColor colorWithRed:71/255.0 green:71/255.0 blue:71/255.0 alpha:1.0];
-    [self.view addSubview:processView];
-    return processView;
-}
+
 //
 - (void)stopAudioAndTestNext{
     [self.globalPlayer pause];
