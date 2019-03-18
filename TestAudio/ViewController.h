@@ -17,6 +17,7 @@
     NSDictionary *mediaInfo;
     BOOL isStarting;
 //    UIProgressView *audioProcessView;
+    UILabel *playURLLabel;
 }
 @property(nonatomic,strong)AVPlayer * globalPlayer;
 @property(nonatomic,strong)id timeObserver;

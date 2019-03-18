@@ -31,6 +31,21 @@
     self.audioProcessView = [self createProgressWithFrame:CGRectMake(50, videoView.frame.size.height+  videoView.frame.origin.y + 17,[UIScreen mainScreen].bounds.size.width - 100, 4)];
     self.audioProcessView.progress = 0;
     
+    UILabel *playURLDesLabel = [self createLabelWithFrame:CGRectMake(20, self.audioProcessView.frame.origin.y + 30, 80, 60) :15 :@"Arial" :[UIColor redColor] :NSTextAlignmentLeft];
+    playURLDesLabel.text = @"测试链接:";
+    [self.view addSubview:playURLDesLabel];
+    playURLLabel = [self createLabelWithFrame:CGRectMake(playURLDesLabel.frame.origin.x +playURLDesLabel.frame.size.width , playURLDesLabel.frame.origin.y , [UIScreen mainScreen].bounds.size.width - 40 - playURLDesLabel.frame.origin.x, 60) :15 :@"Arial" :[UIColor redColor] :NSTextAlignmentLeft];
+    playURLLabel.numberOfLines = 0;
+    [self.view addSubview:playURLLabel];
+    
+    
+}
+- (UILabel *)createLabelWithFrame:(CGRect)frame :(CGFloat)fontSize :(NSString *)fontName :(UIColor *)fontColor :(NSTextAlignment)alignment{
+    UILabel *label = [[UILabel alloc]initWithFrame:frame];
+    label.font = [UIFont fontWithName:fontName size:fontSize];
+    label.textColor = fontColor;
+    label.textAlignment = alignment;
+    return label;
 }
 //添加视频播放页面
 - (UIView *)createPlayerInViewWithFrame:(CGRect)frame{
@@ -70,6 +85,9 @@
 }
 
 - (void)replaceTestCurrentItem:(NSString *)audioUrl :(NSString *)mediaType{
+    playURLLabel.text = audioUrl;
+//    audioUrl = @"https://cms-1255803335.cos.ap-beijing.myqcloud.com/af6bbc5bd93eacaadf5b955e7660feb0_bc59eaea-b767-4900-8e49-766913bbe45f.mp3";
+//    mediaType = @"audio";
     //音频类型
     if ([mediaType isEqualToString:@"audio"]) {
         if (self.globalPlayer) {
@@ -79,27 +97,39 @@
                 self.timeObserver = nil;
             }
         }
-        AVPlayerItem *playItem = [[AVPlayerItem alloc]initWithURL:[NSURL URLWithString:audioUrl]];
-        if (self.globalPlayer == nil) {
-            self.globalPlayer = [AVPlayer playerWithPlayerItem:playItem];
-            if([[UIDevice currentDevice] systemVersion].intValue>=10){
-                self.globalPlayer.automaticallyWaitsToMinimizeStalling = NO;
+        if ([self getIsValidAudioFormatWithURL:audioUrl]) {
+            AVPlayerItem *playItem = [[AVPlayerItem alloc]initWithURL:[NSURL URLWithString:audioUrl]];
+            if (self.globalPlayer == nil) {
+                self.globalPlayer = [AVPlayer playerWithPlayerItem:playItem];
+                if([[UIDevice currentDevice] systemVersion].intValue>=10){
+                    self.globalPlayer.automaticallyWaitsToMinimizeStalling = NO;
+                }
+            }else{
+                [self.globalPlayer replaceCurrentItemWithPlayerItem:playItem];
             }
+            [self.globalPlayer playImmediatelyAtRate:1.0];
+            [self addObserverWithAudio];
         }else{
-            [self.globalPlayer replaceCurrentItemWithPlayerItem:playItem];
+            [self getNextTestMediaPlayerWithIsSuccess:NO :@"音频格式有误，moviePlayer只支持MP3,WMA,RM,ACC,OGG,APE,FLAC,FLV格式"];
         }
-        [self.globalPlayer playImmediatelyAtRate:1.0];
-        [self addObserverWithAudio];
+        
+        
     }else if ([mediaType isEqualToString:@"video"]){
         //视频类型
-        NSString *videoUrl = [audioUrl stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
-        NSURL *mediaUrl = [NSURL URLWithString:videoUrl];
-        [self.mpMoviePlayer setContentURL:mediaUrl];
-        [self.mpMoviePlayer prepareToPlay];
-        [self.mpMoviePlayer setShouldAutoplay:NO];
-        [[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayback error:nil];
-        [self.mpMoviePlayer play];
-        [self addNotification];
+        if ([self getIsValidVideoFormatWithURL:audioUrl]) {
+            NSString *videoUrl = [audioUrl stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+            NSURL *mediaUrl = [NSURL URLWithString:videoUrl];
+            [self.mpMoviePlayer setContentURL:mediaUrl];
+            [self.mpMoviePlayer prepareToPlay];
+            [self.mpMoviePlayer setShouldAutoplay:NO];
+            [[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayback error:nil];
+            [self.mpMoviePlayer play];
+            [self addNotification];
+        }else{
+            [self getNextTestMediaPlayerWithIsSuccess:NO :@"视频格式有误，moviePlayer只支持MOV、MP4、M4V、3GP格式"];
+        }
+        
+        
     }else if(mediaType != nil){
         [self fetchTestJob];
     }
@@ -114,7 +144,7 @@
         float total = songItem.duration.value;
         if (current) {
             weakself.audioProcessView.progress = current / total;
-            if (current >= 5) {
+            if (current >= 100) {
                 [weakself stopAudioAndTestNext];
             }
             
@@ -144,6 +174,26 @@
     NSString *deviceModel = [NSString stringWithCString:systemInfo.machine encoding:NSUTF8StringEncoding];
     return deviceModel;
 }
+- (BOOL)getIsValidVideoFormatWithURL:(NSString *)strURL{
+    NSArray *allFormat = @[@"mov",@"mp4",@"m4v",@"3gp"];
+    NSArray *arrURLs = [strURL componentsSeparatedByString:@"."];
+    if (arrURLs.count>0) {
+        if ([allFormat containsObject:[arrURLs objectAtIndex:arrURLs.count -1]]) {
+            return YES;
+        }
+    }
+    return FALSE;
+}
+- (BOOL)getIsValidAudioFormatWithURL:(NSString *)strURL{
+    NSArray *allFormat = @[@"mp3",@"wma",@"rm",@"acc",@"ogg",@"ape",@"flac",@"flv"];
+    NSArray *arrURLs = [strURL componentsSeparatedByString:@"."];
+    if (arrURLs.count>0) {
+        if ([allFormat containsObject:[arrURLs objectAtIndex:arrURLs.count -1]]) {
+            return YES;
+        }
+    }
+    return FALSE;
+}
 
 #pragma mark - 视频状态监听
 -(void)addNotification{
@@ -161,8 +211,14 @@
  *  @param notification 通知对象
  */
 -(void)mediaPlayerPlaybackFinished:(NSNotification *)notification{
-    [self removeNotification];
-    [self getNextTestMediaPlayerWithIsSuccess:YES :@""];
+    
+    MPMovieFinishReason reason  = [notification.userInfo[MPMoviePlayerPlaybackDidFinishReasonUserInfoKey] intValue];
+    if (reason == MPMovieFinishReasonPlaybackEnded) {
+        [self removeNotification];
+        [self getNextTestMediaPlayerWithIsSuccess:YES :@""];
+    }else if (reason == MPMovieFinishReasonPlaybackError){
+        
+    }
 }
 - (void)getNextTestMediaPlayerWithIsSuccess:(BOOL)isSuccess :(NSString *)errorMessage
 {
@@ -196,12 +252,13 @@
     NSData *xmlData = [NSData dataWithContentsOfURL:url];
     [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
     NSString *xmlString = [[NSString alloc] initWithData:xmlData encoding:NSUTF8StringEncoding];
+    NSError *err;
+    NSString *htmlString = [NSString stringWithContentsOfURL:[NSURL URLWithString:strURL] encoding:NSASCIIStringEncoding error:&err];
     if (xmlData == nil) {
         NSLog(@"File read failed!:%@", @"文件不存在");
         [self getNextTestMediaPlayerWithIsSuccess:NO :@"文件不存在"];
     }
     else {
-        NSLog(@"File read succeed!:%@",xmlString);
         [self replaceTestCurrentItem:strURL :type];
     }
 }

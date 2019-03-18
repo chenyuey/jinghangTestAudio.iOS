@@ -535,6 +535,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				PLIST_FILE_OUTPUT_FORMAT = binary;
 				PRODUCT_BUNDLE_IDENTIFIER = com.bigegg.com.TestAudio;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -554,6 +555,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				PLIST_FILE_OUTPUT_FORMAT = binary;
 				PRODUCT_BUNDLE_IDENTIFIER = com.bigegg.com.TestAudio;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TARGETED_DEVICE_FAMILY = "1,2";
