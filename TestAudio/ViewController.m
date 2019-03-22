@@ -85,7 +85,11 @@
     
 }
 - (void)fetchTestJob{
-    NSDictionary *dictInfo = @{@"equipment":@{@"equipment_name": [ViewController deviceModelName], @"player_name": @"AVPlayer", @"system_version":[NSString stringWithFormat:@"iOS%@",[[UIDevice currentDevice] systemVersion]]}};
+    NSDictionary *dictInfo = @{@"equipment":@{
+                                       @"equipment_name": [ViewController deviceModelName],
+                                       @"player_name": @"AVPlayer",
+                                       @"system_version":[NSString stringWithFormat:@"iOS%@",[[UIDevice currentDevice] systemVersion]]
+                                       }};
     [PFCloud callFunctionInBackground:@"fetchTestJob" withParameters:dictInfo block:^(id  _Nullable object, NSError * _Nullable error) {
         if (object != nil) {
             self->mediaInfo = object;
@@ -127,6 +131,7 @@
         
     }else if ([mediaType isEqualToString:@"video"]){
         //视频类型
+//        audioUrl = @"https://cms-1255803335.cos.ap-beijing.myqcloud.com/3b43d12a4b50b4a0ba4a307acc34640f_norm.GDh5dNmOO1";
         if ([self getIsValidVideoFormatWithURL:audioUrl]) {
             NSString *videoUrl = [audioUrl stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
             NSURL *mediaUrl = [NSURL URLWithString:videoUrl];
@@ -250,7 +255,16 @@
 - (void)getNextTestMediaPlayerWithIsSuccess:(BOOL)isSuccess :(NSString *)errorMessage
 {
     if (isStarting == YES) {
-        NSDictionary *dictInfo = @{@"success": [NSNumber numberWithBool:isSuccess],@"errorMsg":errorMessage, @"mediaId": [mediaInfo objectForKey:@"mediaId"], @"mediaUrl": [mediaInfo objectForKey:@"mediaUrl"],@"equipment":@{@"equipment_name": [ViewController deviceModelName], @"player_name": @"AVPlayer", @"system_version":[NSString stringWithFormat:@"iOS%@",[[UIDevice currentDevice] systemVersion]]}};
+        NSDictionary *dictInfo = @{@"success":[NSNumber numberWithBool:isSuccess],
+                                   @"errorMsg":errorMessage,
+                                   @"mediaId": [mediaInfo objectForKey:@"mediaId"],
+                                   @"mediaUrl": [mediaInfo objectForKey:@"mediaUrl"],
+                                   @"equipment":@{@"equipment_name": [ViewController deviceModelName],
+                                                  @"player_name": @"AVPlayer",
+                                                  @"system_version":[NSString stringWithFormat:@"iOS%@",[[UIDevice currentDevice] systemVersion]]
+                                                  }
+                                   
+                                   };
         [PFCloud callFunctionInBackground:@"uploadTestReport" withParameters:dictInfo block:^(id  _Nullable object, NSError * _Nullable error) {
             [self fetchTestJob];
         }];

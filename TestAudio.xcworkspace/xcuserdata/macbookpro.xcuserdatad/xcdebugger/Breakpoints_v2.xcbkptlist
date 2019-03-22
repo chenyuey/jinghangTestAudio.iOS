@@ -20,13 +20,13 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "TestAudio/ViewController.m"
-            timestampString = "574593099.0954911"
+            timestampString = "574931028.586274"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "232"
             endingLineNumber = "232"
-            landmarkName = "-mediaPlayerPlaybackFinished:"
-            landmarkType = "7">
+            landmarkName = "ViewController"
+            landmarkType = "3">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -36,13 +36,13 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "TestAudio/ViewController.m"
-            timestampString = "574593099.095771"
+            timestampString = "574931028.586675"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "231"
             endingLineNumber = "231"
-            landmarkName = "-mediaPlayerPlaybackFinished:"
-            landmarkType = "7">
+            landmarkName = "ViewController"
+            landmarkType = "3">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -52,7 +52,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "TestAudio/ViewController.m"
-            timestampString = "574593099.096034"
+            timestampString = "574931028.586925"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "27"
@@ -68,12 +68,12 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "TestAudio/ViewController.m"
-            timestampString = "574593099.096531"
+            timestampString = "574931028.587163"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "276"
             endingLineNumber = "276"
-            landmarkName = "-getFileContentWithUrl:andFileType:"
+            landmarkName = "-stopAudioAndTestNext"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -84,7 +84,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "TestAudio/ViewController.m"
-            timestampString = "574593099.096799"
+            timestampString = "574931028.587402"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "103"
@@ -100,11 +100,90 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "TestAudio/ViewController.m"
-            timestampString = "574593099.097046"
+            timestampString = "574931028.587701"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "129"
             endingLineNumber = "129"
+            landmarkName = "-replaceTestCurrentItem::"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "TestAudio/ViewController.m"
+            timestampString = "574931028.587943"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "268"
+            endingLineNumber = "268"
+            landmarkName = "-getNextTestMediaPlayerWithIsSuccess::"
+            landmarkType = "7">
+            <Locations>
+               <Location
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "-[ViewController getNextTestMediaPlayerWithIsSuccess::]"
+                  moduleName = "TestAudio"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/macbookpro/2019work/TestAudio/TestAudio/ViewController.m"
+                  timestampString = "574931028.756452"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "268"
+                  endingLineNumber = "268"
+                  offsetFromSymbolStart = "876">
+               </Location>
+               <Location
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "__55-[ViewController getNextTestMediaPlayerWithIsSuccess::]_block_invoke"
+                  moduleName = "TestAudio"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/macbookpro/2019work/TestAudio/TestAudio/ViewController.m"
+                  timestampString = "574931028.76015"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "268"
+                  endingLineNumber = "268"
+                  offsetFromSymbolStart = "24">
+               </Location>
+               <Location
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "__destroy_helper_block_.300"
+                  moduleName = "TestAudio"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/macbookpro/2019work/TestAudio/TestAudio/ViewController.m"
+                  timestampString = "574931028.763079"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "268"
+                  endingLineNumber = "268"
+                  offsetFromSymbolStart = "20">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "TestAudio/ViewController.m"
+            timestampString = "574931028.588183"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "134"
+            endingLineNumber = "134"
             landmarkName = "-replaceTestCurrentItem::"
             landmarkType = "7">
          </BreakpointContent>
