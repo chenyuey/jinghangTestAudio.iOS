@@ -64,7 +64,8 @@
     playerView.backgroundColor = [UIColor whiteColor];
     // 实例化媒体播放控件
     self.mpMoviePlayer = [[MPMoviePlayerController alloc] init];
-//    self.mpMoviePlayer.controlStyle = MPMovieControlStyleNone ;
+    self.mpMoviePlayer.controlStyle = MPMovieControlStyleNone ;
+    self.mpMoviePlayer.scalingMode = MPMovieScalingModeAspectFill;
     self.mpMoviePlayer.view.frame=playerView.bounds;
     playerView.clipsToBounds = YES;
     [playerView addSubview:self.mpMoviePlayer.view];
@@ -78,31 +79,49 @@
         isStarting = YES;
         [self fetchTestJob];
         [btn setTitle:@"结束测试" forState:UIControlStateNormal];
+        
+//        NSString *audioUrl = @"https://cms-1255803335.cos.ap-beijing.myqcloud.com/73ec045e66dc8f6a3ad8049deec08c40_norm.mp4";
+//        NSString *videoUrl = [audioUrl stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+//        NSURL *mediaUrl = [NSURL URLWithString:videoUrl];
+//        [self.mpMoviePlayer setContentURL:mediaUrl];
+//        [self.mpMoviePlayer prepareToPlay];
+//        [self.mpMoviePlayer setShouldAutoplay:NO];
+//        [[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayback error:nil];
+//        [self.mpMoviePlayer play];
+//        [self addNotification];
+        
+        
     }else{
         isStarting = NO;
         [btn setTitle:@"开始测试" forState:UIControlStateNormal];
+        [self removeNotification];
     }
     
 }
 - (void)fetchTestJob{
     NSDictionary *dictInfo = @{@"equipment":@{
-                                       @"equipment_name": [ViewController deviceModelName],
+                                       @"equipment_name": [NSString stringWithFormat:@"%@test",[ViewController deviceModelName]],
                                        @"player_name": @"AVPlayer",
                                        @"system_version":[NSString stringWithFormat:@"iOS%@",[[UIDevice currentDevice] systemVersion]]
                                        }};
     [PFCloud callFunctionInBackground:@"fetchTestJob" withParameters:dictInfo block:^(id  _Nullable object, NSError * _Nullable error) {
-        if (object != nil) {
+        if (((NSDictionary*)object).allKeys.count == 3) {
             self->mediaInfo = object;
             [self getFileContentWithUrl:[self->mediaInfo objectForKey:@"mediaUrl"] andFileType :@"video"];
         }
-        NSLog(@"mediaUrl:%@",object);
+        else{
+            //等几秒后再取一次
+            NSTimer *timer = [NSTimer scheduledTimerWithTimeInterval:5000 repeats:NO block:^(NSTimer * _Nonnull tmer) {
+                [self fetchTestJob];
+            }];
+        }
     }];
 }
 
 - (void)replaceTestCurrentItem:(NSString *)audioUrl :(NSString *)mediaType{
     playURLLabel.text = audioUrl;
-//    audioUrl = @"https://cms-1255803335.cos.ap-beijing.myqcloud.com/af6bbc5bd93eacaadf5b955e7660feb0_bc59eaea-b767-4900-8e49-766913bbe45f.mp3";
-//    mediaType = @"audio";
+//    audioUrl = @"https://cms-1255803335.cos.ap-beijing.myqcloud.com/73ec045e66dc8f6a3ad8049deec08c40_norm.mp4";
+//    mediaType = @"video";
     //音频类型
     if ([mediaType isEqualToString:@"audio"]) {
         if (self.globalPlayer) {
@@ -127,11 +146,8 @@
         }else{
             [self getNextTestMediaPlayerWithIsSuccess:NO :@"音频格式有误，moviePlayer只支持MP3,WMA,RM,ACC,OGG,APE,FLAC,FLV格式"];
         }
-        
-        
     }else if ([mediaType isEqualToString:@"video"]){
         //视频类型
-//        audioUrl = @"https://cms-1255803335.cos.ap-beijing.myqcloud.com/3b43d12a4b50b4a0ba4a307acc34640f_norm.GDh5dNmOO1";
         if ([self getIsValidVideoFormatWithURL:audioUrl]) {
             NSString *videoUrl = [audioUrl stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
             NSURL *mediaUrl = [NSURL URLWithString:videoUrl];
@@ -140,13 +156,16 @@
             [self.mpMoviePlayer setShouldAutoplay:NO];
             [[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayback error:nil];
             [self.mpMoviePlayer play];
-            
             [self addNotification];
+            self.isMoviePlayable = NO;
+            movieTimer = [NSTimer scheduledTimerWithTimeInterval:5000 repeats:NO block:^(NSTimer * _Nonnull tmer) {
+                [self getNextTestMediaPlayerWithIsSuccess:NO :@"视频加载失败"];
+                [self->movieTimer invalidate];
+                self->movieTimer = nil;
+            }];
         }else{
             [self getNextTestMediaPlayerWithIsSuccess:NO :@"视频格式有误，moviePlayer只支持MOV、MP4、M4V、3GP格式"];
         }
-        
-        
     }else if(mediaType != nil){
         [self fetchTestJob];
     }
@@ -174,7 +193,6 @@
         AVPlayerItem *playerItem = (AVPlayerItem *)object;
         if ([playerItem status] == AVPlayerStatusReadyToPlay) {
             NSLog(@"AVPlayerStatusReadyToPlay");
-//            [self.globalPlayer playImmediatelyAtRate:1.0];
         }else if ([playerItem status] == AVPlayerStatusFailed) {
             NSLog(@"AVPlayerStatusFailed");
             [self getNextTestMediaPlayerWithIsSuccess:NO :@"音频加载失败"];
@@ -217,12 +235,20 @@
 -(void)addNotification{
     NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
     [notificationCenter addObserver:self selector:@selector(mediaPlayerPlaybackFinished:) name:MPMoviePlayerPlaybackDidFinishNotification object:self.mpMoviePlayer];
-//    [self.mpMoviePlayer addObserver:self forKeyPath:@"VideoStatus" options:NSKeyValueObservingOptionNew|NSKeyValueObservingOptionOld context:nil];
-    [notificationCenter addObserver:self selector:@selector(mediaPlayerLoadStatusChange:) name:MPMoviePlayerLoadStateDidChangeNotification object:nil];
+    [notificationCenter addObserver:self selector:@selector(mediaPlayerDurationAvailable:) name:MPMovieDurationAvailableNotification object:self.mpMoviePlayer];
+    [notificationCenter addObserver:self selector:@selector(mediaPlayerLoadStatusChange:) name:MPMoviePlayerLoadStateDidChangeNotification object:self.mpMoviePlayer];
+    
 }
 - (void)removeNotification{
     NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
     [notificationCenter removeObserver:self name:MPMoviePlayerPlaybackDidFinishNotification object:self.mpMoviePlayer];
+    [notificationCenter removeObserver:self name:MPMoviePlayerLoadStateDidChangeNotification object:self.mpMoviePlayer];
+    [notificationCenter removeObserver:self name:MPMovieDurationAvailableNotification object:self.mpMoviePlayer];
+}
+-(void)mediaPlayerDurationAvailable:(NSNotification *)notification{
+    MPMoviePlayerController *mpPlayer = notification.object;
+    NSLog(@"&&&&&&&&&&&&==duration:%f",mpPlayer.duration);
+    
 }
 
 /**
@@ -244,10 +270,15 @@
     switch (self.mpMoviePlayer.loadState) {
         case MPMovieLoadStatePlayable:
             NSLog(@"MPMovieLoadStatePlayable");
+            [movieTimer invalidate];
+            movieTimer = nil;
             break;
         case MPMovieLoadStateUnknown:
             NSLog(@"MPMovieLoadStateUnknown");
-            [self getNextTestMediaPlayerWithIsSuccess:NO :@"视频加载失败"];
+//            [self getNextTestMediaPlayerWithIsSuccess:NO :@"视频加载失败"];
+//            [self removeNotification];
+        case MPMovieLoadStateStalled:
+            NSLog(@"MPMovieLoadStateUnknown===停滞状态");
         default:
             break;
     }
@@ -259,7 +290,7 @@
                                    @"errorMsg":errorMessage,
                                    @"mediaId": [mediaInfo objectForKey:@"mediaId"],
                                    @"mediaUrl": [mediaInfo objectForKey:@"mediaUrl"],
-                                   @"equipment":@{@"equipment_name": [ViewController deviceModelName],
+                                   @"equipment":@{@"equipment_name": [NSString stringWithFormat:@"%@test",[ViewController deviceModelName]],
                                                   @"player_name": @"AVPlayer",
                                                   @"system_version":[NSString stringWithFormat:@"iOS%@",[[UIDevice currentDevice] systemVersion]]
                                                   }

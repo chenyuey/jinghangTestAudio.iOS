@@ -18,12 +18,15 @@
     BOOL isStarting;
 //    UIProgressView *audioProcessView;
     UILabel *playURLLabel;
+    
+    NSTimer *movieTimer;
 }
 @property(nonatomic,strong)AVPlayer * globalPlayer;
 @property(nonatomic,strong)id timeObserver;
 //视频
 @property(nonatomic, strong)MPMoviePlayerController *mpMoviePlayer;
 @property(nonatomic, strong)UIProgressView *audioProcessView;
+@property BOOL isMoviePlayable;
 
 
 @end
