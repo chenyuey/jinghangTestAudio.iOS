@@ -80,7 +80,7 @@
         [self fetchTestJob];
         [btn setTitle:@"结束测试" forState:UIControlStateNormal];
         
-//        NSString *audioUrl = @"https://cms-1255803335.cos.ap-beijing.myqcloud.com/73ec045e66dc8f6a3ad8049deec08c40_norm.mp4";
+//        NSString *audioUrl = @"https://cms-1255803335.cos.ap-beijing.myqcloud.com/37c6af062b5cf726174e44c3d11e58b2_5c26ec9777563d434aa84c3b.mp4";
 //        NSString *videoUrl = [audioUrl stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
 //        NSURL *mediaUrl = [NSURL URLWithString:videoUrl];
 //        [self.mpMoviePlayer setContentURL:mediaUrl];
@@ -100,12 +100,12 @@
 }
 - (void)fetchTestJob{
     NSDictionary *dictInfo = @{@"equipment":@{
-                                       @"equipment_name": [NSString stringWithFormat:@"%@test",[ViewController deviceModelName]],
+                                       @"equipment_name": [NSString stringWithFormat:@"%@",[ViewController deviceModelName]],
                                        @"player_name": @"AVPlayer",
                                        @"system_version":[NSString stringWithFormat:@"iOS%@",[[UIDevice currentDevice] systemVersion]]
                                        }};
     [PFCloud callFunctionInBackground:@"fetchTestJob" withParameters:dictInfo block:^(id  _Nullable object, NSError * _Nullable error) {
-        if (((NSDictionary*)object).allKeys.count == 3) {
+        if (error == nil) {
             self->mediaInfo = object;
             [self getFileContentWithUrl:[self->mediaInfo objectForKey:@"mediaUrl"] andFileType :@"video"];
         }
@@ -121,7 +121,7 @@
 - (void)replaceTestCurrentItem:(NSString *)audioUrl :(NSString *)mediaType{
     playURLLabel.text = audioUrl;
 //    audioUrl = @"https://cms-1255803335.cos.ap-beijing.myqcloud.com/73ec045e66dc8f6a3ad8049deec08c40_norm.mp4";
-//    mediaType = @"video";
+//    mediaType = @"audio";
     //音频类型
     if ([mediaType isEqualToString:@"audio"]) {
         if (self.globalPlayer) {
@@ -248,6 +248,9 @@
 -(void)mediaPlayerDurationAvailable:(NSNotification *)notification{
     MPMoviePlayerController *mpPlayer = notification.object;
     NSLog(@"&&&&&&&&&&&&==duration:%f",mpPlayer.duration);
+    if (mpPlayer.duration > 10) {
+        [mpPlayer setCurrentPlaybackTime:(mpPlayer.duration-10)];
+    }
     
 }
 
@@ -278,7 +281,7 @@
 //            [self getNextTestMediaPlayerWithIsSuccess:NO :@"视频加载失败"];
 //            [self removeNotification];
         case MPMovieLoadStateStalled:
-            NSLog(@"MPMovieLoadStateUnknown===停滞状态");
+            NSLog(@"MPMovieLoadStateStalled===停滞状态");
         default:
             break;
     }
@@ -287,10 +290,10 @@
 {
     if (isStarting == YES) {
         NSDictionary *dictInfo = @{@"success":[NSNumber numberWithBool:isSuccess],
-                                   @"errorMsg":errorMessage,
+                                   @"error":errorMessage,
                                    @"mediaId": [mediaInfo objectForKey:@"mediaId"],
                                    @"mediaUrl": [mediaInfo objectForKey:@"mediaUrl"],
-                                   @"equipment":@{@"equipment_name": [NSString stringWithFormat:@"%@test",[ViewController deviceModelName]],
+                                   @"equipment":@{@"equipment_name": [NSString stringWithFormat:@"%@",[ViewController deviceModelName]],
                                                   @"player_name": @"AVPlayer",
                                                   @"system_version":[NSString stringWithFormat:@"iOS%@",[[UIDevice currentDevice] systemVersion]]
                                                   }
@@ -318,6 +321,7 @@
     NSString *xmlString = [[NSString alloc] initWithData:xmlData encoding:NSUTF8StringEncoding];
     NSError *err;
     NSString *htmlString = [NSString stringWithContentsOfURL:[NSURL URLWithString:strURL] encoding:NSASCIIStringEncoding error:&err];
+    NSLog(@"媒体链接：%@",strURL);
     if (xmlData == nil) {
         NSLog(@"File read failed!:%@", @"文件不存在");
         [self getNextTestMediaPlayerWithIsSuccess:NO :@"文件不存在"];
