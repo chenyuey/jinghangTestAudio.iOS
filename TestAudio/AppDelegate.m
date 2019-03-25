@@ -21,7 +21,7 @@
     ParseClientConfiguration *config = [ParseClientConfiguration configurationWithBlock:^(id<ParseMutableClientConfiguration> configuration) {
 //        configuration.applicationId = @"TdgH827olWojXWNIW78aNJOB";
 //        configuration.clientKey = @"XYqxT7dKubhNeWN2TMISsskw";
-        configuration.server = @"http://10.135.8.225:1337/api/1";
+        configuration.server = @"http://39.106.196.116:1337/api/1";
         configuration.applicationId = @"TdgH827olWojXWNIW78aNJOB";
         configuration.clientKey = @"XYqxT7dKubhNeWN2TMISsskw";
 //        configuration.server = @"http://10.135.9.35:1337/api/1";
